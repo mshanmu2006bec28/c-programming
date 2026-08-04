@@ -1,0 +1,55 @@
+#include <stdio.h>
+#include <stdlib.h>
+
+// Helper function to swap two array elements
+void swap(int* a, int* b) {
+    int temp = *a;
+    *a = *b;
+    *b = temp;
+}
+
+// Recursive backtracking worker
+void backtrack(int* nums, int numsSize, int step, int** result, int* returnSize) {
+    // Base Case: If the step pointer reaches the end, a valid permutation is formed
+    if (step == numsSize) {
+        result[*returnSize] = (int*)malloc(numsSize * sizeof(int));
+        for (int i = 0; i < numsSize; i++) {
+            result[*returnSize][i] = nums[i];
+        }
+        (*returnSize)++;
+        return;
+    }
+
+    // Try all possible elements for the current swap position
+    for (int i = step; i < numsSize; i++) {
+        swap(&nums[step], &nums[i]);       // Choose: swap element into current spot
+        backtrack(nums, numsSize, step + 1, result, returnSize); // Explore next step
+        swap(&nums[step], &nums[i]);       // Unchoose: backtrack by swapping back
+    }
+}
+
+int** permute(int* nums, int numsSize, int* returnSize, int** returnColumnSizes) {
+    // Total number of permutations is N! (factorial)
+    int total_permutations = 1;
+    for (int i = 1; i <= numsSize; i++) {
+        total_permutations *= i;
+    }
+
+    // Allocate memory for the primary list of row pointers
+    int** result = (int**)malloc(total_permutations * sizeof(int*));
+    
+    // Allocate memory for the out-pointer column array tracker
+    *returnColumnSizes = (int*)malloc(total_permutations * sizeof(int));
+    
+    *returnSize = 0; // Initialize row counter
+
+    // Start the backtracking function from index 0
+    backtrack(nums, numsSize, 0, result, returnSize);
+
+    // Populate every column tracker with the array size
+    for (int i = 0; i < total_permutations; i++) {
+        (*returnColumnSizes)[i] = numsSize;
+    }
+
+    return result;
+}
