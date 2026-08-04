@@ -1,0 +1,83 @@
+#include <stdio.h>
+#include <stdlib.h>
+#include <stdbool.h>
+#include <string.h>
+
+// Recursive backtracking worker
+void backtrack(int row, int n, int* queens, bool* cols, bool* diag1, bool* diag2, 
+               char**** result, int* returnSize, int* maxSolutions) {
+    // Base Case: Successfully placed queens in all rows
+    if (row == n) {
+        // If our current result array size is full, reallocate more memory
+        if (*returnSize >= *maxSolutions) {
+            *maxSolutions *= 2;
+            *result = (char***)realloc(*result, (*maxSolutions) * sizeof(char**));
+        }
+
+        // Allocate memory for the board configuration
+        char** board = (char**)malloc(n * sizeof(char*));
+        for (int i = 0; i < n; i++) {
+            board[i] = (char*)malloc((n + 1) * sizeof(char));
+            for (int j = 0; j < n; j++) {
+                board[i][j] = (queens[i] == j) ? 'Q' : '.';
+            }
+            board[i][n] = '\0'; // Null terminate the string
+        }
+        (*result)[*returnSize] = board;
+        (*returnSize)++;
+        return;
+    }
+
+    for (int col = 0; col < n; col++) {
+        int d1 = row - col + n - 1; // Index mapping for diagonal '\'
+        int d2 = row + col;         // Index mapping for anti-diagonal '/'
+
+        // If a queen already threatens this spot, skip it
+        if (cols[col] || diag1[d1] || diag2[d2]) {
+            continue;
+        }
+
+        // Choose
+        queens[row] = col;
+        cols[col] = true;
+        diag1[d1] = true;
+        diag2[d2] = true;
+
+        // Explore
+        backtrack(row + 1, n, queens, cols, diag1, diag2, result, returnSize, maxSolutions);
+
+        // Unchoose (Backtrack)
+        cols[col] = false;
+        diag1[d1] = false;
+        diag2[d2] = false;
+    }
+}
+
+char*** solveNQueens(int n, int* returnSize, int** returnColumnSizes) {
+    int maxSolutions = 50; // Initial solution capacity allocation
+    char*** result = (char***)malloc(maxSolutions * sizeof(char**));
+    *returnSize = 0;
+
+    // Trackers for queen placements and attack vectors
+    int* queens = (int*)malloc(n * sizeof(int));
+    bool* cols = (bool*)calloc(n, sizeof(bool));
+    bool* diag1 = (bool*)calloc(2 * n, sizeof(bool));
+    bool* diag2 = (bool*)calloc(2 * n, sizeof(bool));
+
+    // Start backtracking from row 0
+    backtrack(0, n, queens, cols, diag1, diag2, &result, returnSize, &maxSolutions);
+
+    // Set the column sizes for every found solution row
+    *returnColumnSizes = (int*)malloc((*returnSize) * sizeof(int));
+    for (int i = 0; i < *returnSize; i++) {
+        (*returnColumnSizes)[i] = n;
+    }
+
+    // Clean up auxiliary trackers
+    free(queens);
+    free(cols);
+    free(diag1);
+    free(diag2);
+
+    return result;
+}
