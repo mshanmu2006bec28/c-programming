@@ -1,0 +1,45 @@
+#include <stdbool.h>
+#include <string.h>
+
+bool isMatch(char* s, char* p) {
+    int s_len = strlen(s);
+    int p_len = strlen(p);
+    
+    int s_idx = 0, p_idx = 0;
+    int star_idx = -1, s_backtrack = -1;
+
+    while (s_idx < s_len) {
+        // Case 1: Characters match directly, or pattern contains '?'
+        if (p_idx < p_len && (p[p_idx] == s[s_idx] || p[p_idx] == '?')) {
+            s_idx++;
+            p_idx++;
+        }
+        // Case 2: We find an asterisk '*'. 
+        // Record the position of the star and the current position in the string.
+        else if (p_idx < p_len && p[p_idx] == '*') {
+            star_idx = p_idx;
+            s_backtrack = s_idx;
+            p_idx++; // Move past the star, assuming it matches an empty sequence for now
+        }
+        // Case 3: Mismatch occurs, but we previously encountered a star '*'.
+        // Backtrack: assume the star matches one more character from string 's'
+        else if (star_idx != -1) {
+            p_idx = star_idx + 1;   // Reset pattern pointer to just after the star
+            s_backtrack++;          // Consume one more character in string 's'
+            s_idx = s_backtrack;    // Move string pointer forward
+        }
+        // Case 4: Mismatch with no previous star means the string cannot match
+        else {
+            return false;
+        }
+    }
+
+    // Check for any remaining characters in the pattern.
+    // They must all be '*' for a successful match (matching empty sequences).
+    while (p_idx < p_len && p[p_idx] == '*') {
+        p_idx++;
+    }
+
+    // If the entire pattern is consumed, we have a complete match.
+    return p_idx == p_len;
+}
