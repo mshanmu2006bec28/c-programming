@@ -1,0 +1,53 @@
+#include <stdbool.h>
+#include <stdlib.h>
+
+// Recursive backtracking helper function
+void backtrack(int row, int n, bool* cols, bool* diag1, bool* diag2, int* total_count) {
+    // Base Case: All queens are placed successfully
+    if (row == n) {
+        (*total_count)++;
+        return;
+    }
+
+    for (int col = 0; col < n; col++) {
+        int d1 = row - col + n - 1; // Index mapping for diagonal '\'
+        int d2 = row + col;         // Index mapping for anti-diagonal '/'
+
+        // If this column or either diagonal is already occupied, skip it
+        if (cols[col] || diag1[d1] || diag2[d2]) {
+            continue;
+        }
+
+        // Choose: Place a queen and mark attack paths
+        cols[col] = true;
+        diag1[d1] = true;
+        diag2[d2] = true;
+
+        // Explore: Move to the next row
+        backtrack(row + 1, n, cols, diag1, diag2, total_count);
+
+        // Unchoose: Backtrack by clearing attack paths
+        cols[col] = false;
+        diag1[d1] = false;
+        diag2[d2] = false;
+    }
+}
+
+int totalNQueens(int n) {
+    int total_count = 0;
+
+    // Allocate tracking arrays for columns and both diagonals
+    bool* cols = (bool*)calloc(n, sizeof(bool));
+    bool* diag1 = (bool*)calloc(2 * n, sizeof(bool));
+    bool* diag2 = (bool*)calloc(2 * n, sizeof(bool));
+
+    // Start backtracking from row 0
+    backtrack(0, n, cols, diag1, diag2, &total_count);
+
+    // Free tracking arrays
+    free(cols);
+    free(diag1);
+    free(diag2);
+
+    return total_count;
+}
