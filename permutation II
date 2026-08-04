@@ -1,0 +1,78 @@
+#include <stdio.h>
+#include <stdlib.h>
+#include <stdbool.h>
+
+// Helper comparison function for qsort
+int cmp(const void* a, const void* b) {
+    return (*(int*)a - *(int*)b);
+}
+
+// Recursive backtracking worker
+void backtrack(int* nums, int numsSize, int step, int* current, bool* visited, int** result, int* returnSize) {
+    // Base Case: A valid unique permutation is formed
+    if (step == numsSize) {
+        result[*returnSize] = (int*)malloc(numsSize * sizeof(int));
+        for (int i = 0; i < numsSize; i++) {
+            result[*returnSize][i] = current[i];
+        }
+        (*returnSize)++;
+        return;
+    }
+
+    for (int i = 0; i < numsSize; i++) {
+        // Skip if the element is already used in the current branch
+        if (visited[i]) continue;
+
+        // Skip duplicates: If current element matches the previous element,
+        // and the previous element was not filled in this branch (!visited[i-1]),
+        // it means we are trying to place an identical value in the same position.
+        if (i > 0 && nums[i] == nums[i - 1] && !visited[i - 1]) continue;
+
+        // Choose
+        visited[i] = true;
+        current[step] = nums[i];
+
+        // Explore
+        backtrack(nums, numsSize, step + 1, current, visited, result, returnSize);
+
+        // Unchoose
+        visited[i] = false;
+    }
+}
+
+int** permuteUnique(int* nums, int numsSize, int* returnSize, int** returnColumnSizes) {
+    // Sort the input array to gather duplicate numbers side-by-side
+    qsort(nums, numsSize, sizeof(int), cmp);
+
+    // Calculate maximum possible rows safely. Max size is 8! = 40,320
+    int max_permutations = 1;
+    for (int i = 1; i <= numsSize; i++) {
+        max_permutations *= i;
+    }
+
+    // Allocate memory blocks
+    int** result = (int**)malloc(max_permutations * sizeof(int*));
+    *returnColumnSizes = (int*)malloc(max_permutations * sizeof(int));
+    
+    int* current = (int*)malloc(numsSize * sizeof(int));
+    bool* visited = (bool*)calloc(numsSize, sizeof(bool));
+
+    *returnSize = 0;
+
+    // Execute backtracking
+    backtrack(nums, numsSize, 0, current, visited, result, returnSize);
+
+    // Populate every column tracker with the element size
+    for (int i = 0; i < *returnSize; i++) {
+        (*returnColumnSizes)[i] = numsSize;
+    }
+
+    // Free local memory helper containers
+    free(current);
+    free(visited);
+
+    // Shrink memory allocation to fit the actual row count
+    result = (int**)realloc(result, (*returnSize) * sizeof(int*));
+    *returnColumnSizes = (int*)realloc(*returnColumnSizes, (*returnSize) * sizeof(int));
+
+    return result;
