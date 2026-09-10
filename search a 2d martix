@@ -1,0 +1,33 @@
+#include <stdbool.h>
+
+bool searchMatrix(int** matrix, int matrixSize, int* matrixColSize, int target) {
+    if (matrixSize == 0 || matrixColSize[0] == 0) {
+        return false;
+    }
+
+    int m = matrixSize;
+    int n = matrixColSize[0];
+    
+    int low = 0;
+    int high = (m * n) - 1;
+
+    while (low <= high) {
+        int mid = low + (high - low) / 2;
+        
+        // Map 1D index back to 2D coordinates
+        int r = mid / n;
+        int c = mid % n;
+        
+        int val = matrix[r][c];
+
+        if (val == target) {
+            return true;
+        } else if (val < target) {
+            low = mid + 1; // Search right half
+        } else {
+            high = mid - 1; // Search left half
+        }
+    }
+
+    return false;
+}
