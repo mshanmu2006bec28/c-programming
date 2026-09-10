@@ -1,0 +1,71 @@
+#include <stdio.h>
+#include <string.h>
+#include <limits.h>
+#include <stdlib.h>
+
+char* minWindow(char* s, char* t) {
+    int s_len = strlen(s);
+    int t_len = strlen(t);
+    
+    if (s_len == 0 || t_len == 0 || s_len < t_len) {
+        return "";
+    }
+
+    int t_count[128] = {0};
+    int window_count[128] = {0};
+    
+    // Count unique characters required from t
+    int required_unique = 0;
+    for (int i = 0; i < t_len; i++) {
+        if (t_count[(unsigned char)t[i]] == 0) {
+            required_unique++;
+        }
+        t_count[(unsigned char)t[i]]++;
+    }
+
+    int left = 0, right = 0;
+    int formed = 0; // Tracks characters meeting required frequency
+    
+    int min_len = INT_MAX;
+    int min_left = 0;
+
+    while (right < s_len) {
+        char c = s[right];
+        window_count[(unsigned char)c]++;
+
+        // Check if character criteria is met
+        if (t_count[(unsigned char)c] > 0 && window_count[(unsigned char)c] == t_count[(unsigned char)c]) {
+            formed++;
+        }
+
+        // Try to contract window from the left
+        while (left <= right && formed == required_unique) {
+            char left_c = s[left];
+
+            // Save the smallest window snapshot
+            if (right - left + 1 < min_len) {
+                min_len = right - left + 1;
+                min_left = left;
+            }
+
+            // Remove character from left boundary
+            window_count[(unsigned char)left_c]--;
+            if (t_count[(unsigned char)left_c] > 0 && window_count[(unsigned char)left_c] < t_count[(unsigned char)left_c]) {
+                formed--;
+            }
+            left++;
+        }
+        right++;
+    }
+
+    if (min_len == INT_MAX) {
+        return "";
+    }
+
+    // Allocate result string and terminate with null character
+    char* result = (char*)malloc((min_len + 1) * sizeof(char));
+    strncpy(result, s + min_left, min_len);
+    result[min_len] = '\0';
+
+    return result;
+}
