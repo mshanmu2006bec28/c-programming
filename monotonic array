@@ -1,0 +1,23 @@
+include <stdbool.h>
+
+bool isMonotonic(int* nums, int numsSize) {
+    bool increasing = true;
+    bool decreasing = true;
+
+    for (int i = 0; i < numsSize - 1; i++) {
+        // Access adjacent elements via pointer arithmetic offsets
+        if (*(nums + i) > *(nums + i + 1)) {
+            increasing = false; // Breaking monotone increasing condition
+        }
+        if (*(nums + i) < *(nums + i + 1)) {
+            decreasing = false; // Breaking monotone decreasing condition
+        }
+        
+        // Optimization: Early exit if it breaks both trends
+        if (!increasing && !decreasing) {
+            return false;
+        }
+    }
+
+    return increasing || decreasing;
+}
