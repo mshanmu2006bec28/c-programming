@@ -1,0 +1,19 @@
+int minPatches(int* nums, int numsSize, int n) {
+    long long miss = 1; // Tracks the smallest sum we cannot currently form
+    int patches = 0;    // Tracks the total number of patches added
+    int i = 0;          // Iterator index for processing elements
+
+    while (miss <= n) {
+        // If the current element in nums exists and is small enough to extend our range
+        if (i < numsSize && *(nums + i) <= miss) {
+            miss += *(nums + i);
+            i++;
+        } else {
+            // Otherwise, we must greedily patch 'miss' itself to cover the gap optimally
+            miss += miss;
+            patches++;
+        }
+    }
+
+    return patches;
+}
