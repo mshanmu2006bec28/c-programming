@@ -1,0 +1,46 @@
+#include <stdio.h>
+#include <stdlib.h>
+
+#define MAX(a, b) ((a) > (b) ? (a) : (b))
+
+int findMaxLength(int* nums, int numsSize) {
+    // The running count balance can range from -numsSize to +numsSize.
+    // We shift the index by numsSize to keep keys positive.
+    int mapSize = 2 * numsSize + 1;
+    
+    // Allocate space for the lookup array
+    int* firstIndex = (int*)malloc(mapSize * sizeof(int));
+    if (!firstIndex) return 0;
+    
+    // Initialize the lookup table with -2 (indicating an unseen sum value)
+    for (int i = 0; i < mapSize; i++) {
+        *(firstIndex + i) = -2;
+    }
+    
+    // Base case: A prefix balance of 0 happens at index -1
+    *(firstIndex + 0 + numsSize) = -1;
+    
+    int count = 0;
+    int maxLength = 0;
+    
+    for (int i = 0; i < numsSize; i++) {
+        // Treat 0 as -1, and 1 as +1
+        count += (*(nums + i) == 1) ? 1 : -1;
+        
+        int mapKey = count + numsSize;
+        
+        if (*(firstIndex + mapKey) != -2) {
+            // If we've seen this balance before, calculate the contiguous subarray length
+            int currentLength = i - *(firstIndex + mapKey);
+            maxLength = MAX(maxLength, currentLength);
+        } else {
+            // Record the first index where this balance score occurs
+            *(firstIndex + mapKey) = i;
+        }
+    }
+    
+    // Free the dynamically allocated hash map table
+    free(firstIndex);
+    
+    return maxLength;
+}
