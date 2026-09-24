@@ -1,0 +1,69 @@
+#include<iostream>
+#include<cstdio>
+#include<cstdlib>
+#include<cmath>
+using namespace std;
+struct Node
+{
+	int data;
+	Node* next;
+};
+/*
+ * For reference, the Node structure looks like this:
+ * struct Node {
+ *     int data;
+ *     struct Node* next;
+ * };
+ */
+
+bool has_cycle(Node* head) {
+    // If the list is empty or has only one element, a cycle cannot exist
+    if (head == NULL || head->next == NULL) {
+        return false;
+    }
+
+    // Initialize slow pointer (moves 1 step) and fast pointer (moves 2 steps)
+    Node* slow = head;
+    Node* fast = head;
+
+    // Traverse the list until the fast pointer reaches the end
+    while (fast != NULL && fast->next != NULL) {
+        slow = slow->next;          // Move 1 node forward
+        fast = fast->next->next;    // Move 2 nodes forward
+
+        // If there is a cycle, the fast pointer will catch up to the slow pointer
+        if (slow == fast) {
+            return true;
+        }
+    }
+
+    // If the loop terminates, the fast pointer hit NULL (no cycle exists)
+    return false;
+}
+
+int main()
+{
+	Node *A, *B, *C, *D,*E,*F;
+	A = new Node();	B= new Node();  C= new Node(); D = new Node(); E = new Node(); F= new Node();
+	// case 1:  NULL list 
+	if(has_cycle(NULL)) cout<<true<<endl;
+	else cout<<false<<endl;
+	//case 2:
+	A->next = B; 
+	B->next = C;
+	C->next = A;
+	if(has_cycle(A)) cout<<true<<endl;
+	else cout<<false<<endl;
+	//case 3:  
+	A->next = B; B->next = C; C->next = D; D->next = E; E->next = F; F->next = E;
+	if(has_cycle(A)) cout<<true<<endl;
+	else cout<<false<<endl;
+	//case 4:
+	A->next = B; B->next = C; C->next = D; D->next = E; E->next = F; F->next = NULL;
+	if(has_cycle(A)) cout<<true<<endl;
+	else cout<<false<<endl;
+	// case 5:
+	A->next = B; B->next = C; C->next = D; D->next = E; E->next = F; F->next = A;
+	if(has_cycle(A)) cout<<true<<endl;
+	else cout<<false<<endl;
+}
