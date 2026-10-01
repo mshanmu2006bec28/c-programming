@@ -1,0 +1,67 @@
+#include <stdlib.h>
+#include <string.h>
+
+typedef struct {
+    int* original;    // Keeps track of the original array configuration
+    int* current;     // Holds the active/shuffled array configuration
+    int size;         // Size of the array
+} Solution;
+
+// Initializes the object with the integer array nums
+Solution* solutionCreate(int* nums, int numsSize) {
+    Solution* obj = (Solution*)malloc(sizeof(Solution));
+    obj->size = numsSize;
+    
+    // Allocate memory for both configurations
+    obj->original = (int*)malloc(numsSize * sizeof(int));
+    obj->current = (int*)malloc(numsSize * sizeof(int));
+    
+    // Copy the contents into both arrays
+    memcpy(obj->original, nums, numsSize * sizeof(int));
+    memcpy(obj->current, nums, numsSize * sizeof(int));
+    
+    return obj;
+}
+
+// Resets the array to its original configuration and returns it
+int* solutionReset(Solution* obj, int* returnSize) {
+    *returnSize = obj->size;
+    
+    // Restore the current configuration from the original configuration
+    memcpy(obj->current, obj->original, obj->size * sizeof(int));
+    
+    return obj->current;
+}
+
+// Returns a random shuffling of the array
+int* solutionShuffle(Solution* obj, int* returnSize) {
+    *returnSize = obj->size;
+    
+    // Fisher-Yates shuffle algorithm
+    for (int i = obj->size - 1; i > 0; i--) {
+        // Pick a random index from 0 to i
+        int j = rand() % (i + 1);
+        
+        // Swap elements at index i and j
+        int temp = obj->current[i];
+        obj->current[i] = obj->current[j];
+        obj->current[j] = temp;
+    }
+    
+    return obj->current;
+}
+
+// Cleans up all allocated memory
+void solutionFree(Solution* obj) {
+    free(obj->original);
+    free(obj->current);
+    free(obj);
+}
+
+/**
+ * Your Solution struct will be instantiated and called as such:
+ * Solution* obj = solutionCreate(nums, numsSize);
+ * int* param_1 = solutionReset(obj, returnSize);
+ * int* param_2 = solutionShuffle(obj, returnSize);
+ * solutionFree(obj);
+ */
