@@ -1,0 +1,46 @@
+#include <stdlib.h>
+
+// Structure to pair each value with its original index
+typedef struct {
+    int value;
+    int index;
+} Element;
+
+// Comparison function for qsort to sort elements by value in ascending order
+int compareElements(const void* a, const void* b) {
+    int valA = ((Element*)a)->value;
+    int valB = ((Element*)b)->value;
+    if (valA < valB) return -1;
+    if (valA > valB) return 1;
+    return 0;
+}
+
+long long countOperationsToEmptyArray(int* nums, int numsSize) {
+    // 1. Create a tracking array of structures
+    Element* arr = (Element*)malloc(numsSize * sizeof(Element));
+    for (int i = 0; i < numsSize; i++) {
+        arr[i].value = nums[i];
+        arr[i].index = i;
+    }
+
+    // 2. Sort the elements by value so we know the exact removal sequence
+    qsort(arr, numsSize, sizeof(Element), compareElements);
+
+    // Initial operations count is equal to the size of the array 
+    // because every element must be deleted at least once.
+    long long operations = numsSize; 
+
+    // 3. Sweep through the sorted sequence and calculate rotation penalties
+    for (int i = 1; i < numsSize; i++) {
+        // If the current minimum element's original index appears BEFORE 
+        // the previously removed element's index, we have wrapped around.
+        if (arr[i].index < arr[i - 1].index) {
+            // Every element remaining in the array from index 'i' to the end 
+            // had to be rotated/shifted past the front. Add that count.
+            operations += (numsSize - i);
+        }
+    }
+
+    free(arr);
+    return operations;
+}
