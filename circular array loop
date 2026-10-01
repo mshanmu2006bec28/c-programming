@@ -1,0 +1,70 @@
+#include <stdbool.h>
+
+// Helper function to calculate the next index in the circular array
+int getNextIndex(int* nums, int numsSize, int currentIndex, bool isForward) {
+    // If the direction changes mid-path, this path is invalid
+    bool currentDirection = nums[currentIndex] > 0;
+    if (currentDirection != isForward) {
+        return -1; 
+    }
+    
+    // Compute the next wrapped index safely
+    int nextIndex = ((currentIndex + nums[currentIndex]) % numsSize + numsSize) % numsSize;
+    
+    // If a node points to itself, it's a cycle of length 1 (invalid)
+    if (nextIndex == currentIndex) {
+        return -1;
+    }
+    
+    return nextIndex;
+}
+
+bool circularArrayLoop(int* nums, int numsSize) {
+    for (int i = 0; i < numsSize; i++) {
+        // If an element is marked as 0, it means it was already fully evaluated 
+        // as a non-cycle path in an earlier iteration. Skip it.
+        if (nums[i] == 0) {
+            continue;
+        }
+        
+        int slow = i;
+        int fast = i;
+        bool isForward = nums[i] > 0; // Establish target direction for this attempt
+        
+        // Run Floyd's Tortoise and Hare algorithm
+        while (true) {
+            slow = getNextIndex(nums, numsSize, slow, isForward);
+            fast = getNextIndex(nums, numsSize, fast, isForward);
+            
+            // Advance the fast pointer a second time if it hasn't broken out yet
+            if (fast != -1) {
+                fast = getNextIndex(nums, numsSize, fast, isForward);
+            }
+            
+            // If any pointer hits an invalid state (wrong direction or length 1 loop), break
+            if (slow == -1 || fast == -1) {
+                break;
+            }
+            
+            // If they meet, a valid unidirectional cycle of length > 1 has been found
+            if (slow == fast) {
+                return true;
+            }
+        }
+        
+        // Optimization: Backtrack and mark all nodes along this failed loop's path 
+        // as 0 so we don't waste operational cycles re-evaluating them.
+        int curr = i;
+        while (true) {
+            int next = getNextIndex(nums, numsSize, curr, isForward);
+            if (next == -1) {
+                nums[curr] = 0;
+                break;
+            }
+            nums[curr] = 0;
+            curr = next;
+        }
+    }
+    
+    return false;
+}
