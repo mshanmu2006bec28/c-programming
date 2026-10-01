@@ -1,0 +1,58 @@
+#include <stdlib.h>
+
+// Comparison function for qsort to sort numbers in non-decreasing order
+int compare(const void* a, const void* b) {
+    return (*(int*)a - *(int*)b);
+}
+
+// Helper function for backtracking
+void backtrack(int* nums, int numsSize, int start, int* currentSubset, int currentSize, 
+               int*** result, int* resultSize, int** columnSizes) {
+    
+    // Allocate space and add a copy of the current subset to our results array
+    (*result)[*resultSize] = (int*)malloc(currentSize * sizeof(int));
+    for (int i = 0; i < currentSize; i++) {
+        (*result)[*resultSize][i] = currentSubset[i];
+    }
+    (*columnSizes)[*resultSize] = currentSize;
+    (*resultSize)++;
+
+    for (int i = start; i < numsSize; i++) {
+        // Core Trick: Skip duplicate elements if they are at the same depth level
+        if (i > start && nums[i] == nums[i - 1]) {
+            continue; 
+        }
+
+        // Include the current element
+        currentSubset[currentSize] = nums[i];
+        
+        // Move to the next index recursively
+        backtrack(nums, numsSize, i + 1, currentSubset, currentSize + 1, 
+                  result, resultSize, columnSizes);
+    }
+}
+
+/**
+ * Return an array of arrays of size *returnSize.
+ * The sizes of the arrays are returned as *returnColumnSizes array.
+ * Note: Both returned arrays and *columnSizes must be malloced, assume caller calls free().
+ */
+int** subsetsWithDup(int* nums, int numsSize, int* returnSize, int** returnColumnSizes) {
+    // 1. Sort the array so duplicates sit next to each other
+    qsort(nums, numsSize, sizeof(int), compare);
+
+    // Max possible subsets for an array of size N is 2^N
+    int maxSubsets = 1 << numsSize; 
+    
+    int** result = (int**)malloc(maxSubsets * sizeof(int*));
+    *returnColumnSizes = (int*)malloc(maxSubsets * sizeof(int));
+    *returnSize = 0;
+
+    int* currentSubset = (int*)malloc(numsSize * sizeof(int));
+
+    // 2. Start generating subsets
+    backtrack(nums, numsSize, 0, currentSubset, 0, &result, returnSize, returnColumnSizes);
+
+    free(currentSubset);
+    return result;
+}
