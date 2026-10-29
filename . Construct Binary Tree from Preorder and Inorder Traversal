@@ -1,0 +1,59 @@
+/**
+ * Definition for a binary tree node.
+ * struct TreeNode {
+ *     int val;
+ *     struct TreeNode *left;
+ *     struct TreeNode *right;
+ * };
+ */
+
+// Helper function to build the tree using recursive divide-and-conquer
+struct TreeNode* buildTreeHelper(int* preorder, int preStart, int preEnd, 
+                                 int* inorder, int inStart, int inEnd, 
+                                 int* inMap) {
+    // Base Case: No elements left to construct a tree
+    if (preStart > preEnd || inStart > inEnd) {
+        return NULL;
+    }
+    
+    // 1. The first element in the preorder sequence is always the root
+    struct TreeNode* root = (struct TreeNode*)malloc(sizeof(struct TreeNode));
+    root->val = preorder[preStart];
+    root->left = NULL;
+    root->right = NULL;
+    
+    // 2. Fetch the index of this root in the inorder sequence in O(1) time
+    // Value offset by 3000 to safely map negative numbers (-3000 to 3000)
+    int rootInIndex = inMap[root->val + 3000];
+    
+    // 3. Calculate how many nodes sit in the left subtree
+    int leftTreeSize = rootInIndex - inStart;
+    
+    // 4. Recursively build the left and right subtrees
+    root->left = buildTreeHelper(preorder, preStart + 1, preStart + leftTreeSize, 
+                                 inorder, inStart, rootInIndex - 1, 
+                                 inMap);
+                                 
+    root->right = buildTreeHelper(preorder, preStart + leftTreeSize + 1, preEnd, 
+                                  inorder, rootInIndex + 1, inEnd, 
+                                  inMap);
+    
+    return root;
+}
+
+struct TreeNode* buildTree(int* preorder, int preorderSize, int* inorder, int inorderSize) {
+    if (preorderSize == 0 || inorderSize == 0) {
+        return NULL;
+    }
+    
+    // Value range is -3000 to 3000. 
+    // Size = 3000 (negative) + 1 (zero) + 3000 (positive) = 6001
+    int inMap[6001];
+    
+    // Map each value to its corresponding index in the inorder array
+    for (int i = 0; i < inorderSize; i++) {
+        inMap[inorder[i] + 3000] = i;
+    }
+    
+    return buildTreeHelper(preorder, 0, preorderSize - 1, inorder, 0, inorderSize - 1, inMap);
+}
