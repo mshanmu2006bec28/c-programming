@@ -1,0 +1,44 @@
+#include <stdlib.h>
+#include <string.h>
+
+int find_idx(int* arr, int size, int val) {
+    int low = 0, high = size - 1;
+    while (low <= high) {
+        int mid = low + (high - low) / 2;
+        if (arr[mid] == val) return mid;
+        if (arr[mid] < val) low = mid + 1;
+        else high = mid - 1;
+    }
+    return low;
+}
+
+double* medianSlidingWindow(int* nums, int numsSize, int k, int* returnSize) {
+    *returnSize = numsSize - k + 1;
+    double* result = (double*)malloc((*returnSize) * sizeof(double));
+    int* window = (int*)malloc(k * sizeof(int));
+    
+    for (int i = 0; i < k; i++) {
+        int idx = find_idx(window, i, nums[i]);
+        memmove(&window[idx + 1], &window[idx], (i - idx) * sizeof(int));
+        window[idx] = nums[i];
+    }
+    
+    int r = 0;
+    result[r++] = (k % 2) ? window[k / 2] : ((double)window[k / 2 - 1] + window[k / 2]) / 2.0;
+    
+    for (int i = k; i < numsSize; i++) {
+        
+        int del_idx = find_idx(window, k, nums[i - k]);
+        memmove(&window[del_idx], &window[del_idx + 1], (k - del_idx - 1) * sizeof(int));
+        
+        int ins_idx = find_idx(window, k - 1, nums[i]);
+        memmove(&window[ins_idx + 1], &window[ins_idx], (k - ins_idx - 1) * sizeof(int));
+        window[ins_idx] = nums[i];
+        
+        
+        result[r++] = (k % 2) ? window[k / 2] : ((double)window[k / 2 - 1] + window[k / 2]) / 2.0;
+    }
+    
+    free(window);
+    return result;
+}
